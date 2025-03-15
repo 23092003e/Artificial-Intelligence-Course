@@ -87,16 +87,84 @@ def depthFirstSearch(problem):
     print("Start's successors:", problem.getSuccessors(problem.getStartState()))
     """
     "*** YOUR CODE HERE ***"
+    from util import Stack
+    # Initialize strack and visited set
+    frontier = Stack()
+    visited = set()
+    
+    frontier.push((problem.getStartState(), [], 0))
+    
+    while not frontier.isEmpty():
+        state, actions, cost = frontier.pop()
+        # If goal state is reached, return the actions taken
+        if problem.isGoalState(state):
+            return actions
+        # Avoid revisiting the same state
+        if state not in visited:
+            visited.add(state)
+            
+            # Explore each successor of the current state
+            for successor, action, stepCost in problem.getSuccessors(state):
+                new_actions = actions + [action]
+                frontier.push((successor, new_actions, cost + stepCost))
+                
+    return []
     util.raiseNotDefined()
 
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
     "*** YOUR CODE HERE ***"
+    from util import Queue
+    frontier = Queue()
+    visited = set()
+    
+    # Enqueue the start state into the queue (state, actions, costs)
+    frontier.push((problem.getStartState(), [], 0))
+    while not frontier.isEmpty():
+        state, actions, cost = frontier.pop()
+        # If goal state is reached, return the actions taken
+        if problem.isGoalState(state):
+            return actions
+        # Avoid revisiting the same state
+        if state not in visited:
+            visited.add(state)
+            # Explore each successor of the current state
+            for successor, action, stepCost in problem.getSuccessors(state):
+                new_actions = actions + [action]
+                frontier.push((successor, new_actions, cost + stepCost))
+    
+    return[]
     util.raiseNotDefined()
 
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
     "*** YOUR CODE HERE ***"
+    from util import PriorityQueue
+    frontier = PriorityQueue()
+    visited = {}
+    start_state = problem.getStartState()
+    
+    frontier.push((start_state, [], 0), 0)
+    visited[start_state] = 0
+    
+    while not frontier.isEmpty():
+        state, actions, cost = frontier.pop()
+        # If goal state is reached, return the actions taken
+        if problem.isGoalState(state):
+            return actions
+        
+        # If this state has already been visited with a higher cost, continue
+        if state not in visited or cost <= visited[state]:
+            visited[state] = cost
+            # Explore each successor of the current state
+            for successor, action, stepCost in problem.getSuccessors(state):
+                new_cost = cost + stepCost
+                if successor not in visited or new_cost < visited[successor]:
+                    new_actions = actions + [action]
+                    frontier.push((successor, new_actions, new_cost), new_cost)
+                    
+    return []
+    
     util.raiseNotDefined()
 
 def nullHeuristic(state, problem=None):
