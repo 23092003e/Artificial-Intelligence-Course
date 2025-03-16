@@ -155,7 +155,7 @@ def uniformCostSearch(problem):
         
         # If this state has already been visited with a higher cost, continue
         if state not in visited or cost <= visited[state]:
-            visited[state] = cost
+            visited[state] = cost   
             # Explore each successor of the current state
             for successor, action, stepCost in problem.getSuccessors(state):
                 new_cost = cost + stepCost
