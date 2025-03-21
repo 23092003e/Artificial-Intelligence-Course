@@ -72,6 +72,13 @@ def tinyMazeSearch(problem):
     w = Directions.WEST
     return  [s, s, w, s, w, w, s, w]
 
+class Superstate:
+    def __init__(self, state, prev, action, priority = 0) -> None:
+        self.state = state
+        self.prev = prev
+        self.move_from_prev = action
+        self.priority = priority
+
 def depthFirstSearch(problem):
     """
     Search the deepest nodes in the search tree first.
@@ -174,9 +181,57 @@ def nullHeuristic(state, problem=None):
     """
     return 0
 
-def aStarSearch(problem, heuristic=nullHeuristic):
+def bestFirstSerach(problem, heuristic=nullHeuristic):
+    """Search the node that has the lowest heuristic first."""
+    from util import PriorityQueue
+    frontier = PriorityQueue()
+    visited = set() 
+    
+    frontier.push((problem.getStartState(), [], 0), heuristic(problem.getStartState(), problem))
+    while not frontier.isEmpty():
+        state, actions, cost = frontier.pop()
+        
+        # If goal state is reached, return the actions taken
+        if problem.isGoalState(state):
+            return actions
+        # Avoid revisiting the same state
+        if state not in visited:
+            visited.add(state)
+            
+            # Explore each successor of the current state
+            for successor, action, stepCost in problem.getSuccessors(state):
+                new_actions = actions + [action]
+                heuristic_cost = heuristic(successor, problem)
+                frontier.push((successor, new_actions, stepCost), heuristic_cost)
+                    
+    return []
+    
+    util.raiseNotDefined()
+
+def aStarSearch(problem: SearchProblem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
     "*** YOUR CODE HERE ***"
+    visited_list = []
+    my_priority_queue = util.PriorityQueue()
+    init_state = problem.getStartState()
+    my_priority_queue.push(Superstate(init_state, None, None, heuristic(init_state, problem)), heuristic(init_state, problem))
+    
+    while (my_priority_queue.isEmpty() == False):
+        current_superstate = my_priority_queue.pop()
+        if problem.isGoalState(current_superstate.state) is True:
+            re_solution = []
+            while current_superstate.move_from_prev is not None:
+                re_solution = [current_superstate.move_from_prev] + re_solution
+                current_superstate = current_superstate.prev
+            return re_solution
+        
+        if current_superstate.state not in visited_list:
+            visited_list += [current_superstate.state]
+            for successor in problem.getSuccessors(current_superstate.state):
+                my_priority_queue.push(Superstate(successor[0], current_superstate, successor[1],
+                                                  successor[2] + current_superstate.priority),
+                                       successor[2] + current_superstate.priority + heuristic(successor[0], problem))
+                
     util.raiseNotDefined()
 
 
@@ -185,3 +240,4 @@ bfs = breadthFirstSearch
 dfs = depthFirstSearch
 astar = aStarSearch
 ucs = uniformCostSearch
+befs = bestFirstSerach
